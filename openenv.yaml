@@ -1,0 +1,33 @@
+name: openenv-email-triage
+version: 1.0.0
+description: Real-world email triage and response simulation for agent learning/evaluation.
+entrypoint: src.environment:EmailTriageOpenEnv
+api:
+  framework: fastapi
+  app: src.api:app
+interfaces:
+  required_methods:
+    - reset
+    - step
+    - state
+models:
+  observation: src.models:Observation
+  action: src.models:Action
+  reward: src.models:Reward
+tasks:
+  - id: task_easy_urgent_flagging
+    name: Urgent Flagging
+    difficulty: easy
+    grader: src.graders:grade_task_easy
+  - id: task_medium_triage_efficiency
+    name: Triage Efficiency
+    difficulty: medium
+    grader: src.graders:grade_task_medium
+  - id: task_hard_full_inbox_management
+    name: Full Inbox Management
+    difficulty: hard
+    grader: src.graders:grade_task_hard
+metadata:
+  domain: productivity
+  real_world_utility: high
+  hf_space_tag: openenv
