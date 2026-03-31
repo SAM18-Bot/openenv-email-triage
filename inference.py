@@ -15,6 +15,8 @@ SYSTEM_PROMPT = (
     "Reply with JSON: {\"action_type\":\"...\",\"confidence\":0.0}."
 )
 
+GEMINI_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
 
 def choose_action(client: OpenAI, model_name: str, observation: Dict) -> Action:
     user_prompt = json.dumps(observation)
@@ -54,12 +56,35 @@ def run_task(task_name: str, grader_fn, client: OpenAI, model_name: str) -> floa
     return grader_fn(env.trajectory)
 
 
-def main() -> None:
-    api_base_url = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
-    model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
+def _resolve_client_config() -> tuple[str, str, str]:
     hf_token = os.environ.get("HF_TOKEN", "")
+    openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+    gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
 
-    client = OpenAI(base_url=api_base_url, api_key=hf_token or os.environ.get("OPENAI_API_KEY", ""))
+    api_key = hf_token or openai_api_key or gemini_api_key
+
+    explicit_base_url = os.environ.get("API_BASE_URL", "").strip()
+    if explicit_base_url:
+        api_base_url = explicit_base_url
+    elif gemini_api_key and not (hf_token or openai_api_key):
+        api_base_url = GEMINI_OPENAI_BASE_URL
+    else:
+        api_base_url = "https://api.openai.com/v1"
+
+    explicit_model = os.environ.get("MODEL_NAME", "").strip()
+    if explicit_model:
+        model_name = explicit_model
+    elif api_base_url.rstrip("/") == GEMINI_OPENAI_BASE_URL.rstrip("/"):
+        model_name = "gemini-2.0-flash"
+    else:
+        model_name = "gpt-4o-mini"
+
+    return api_base_url, model_name, api_key
+
+
+def main() -> None:
+    api_base_url, model_name, api_key = _resolve_client_config()
+    client = OpenAI(base_url=api_base_url, api_key=api_key)
 
     tasks = [
         ("task_urgent_detection", grade_task_easy),
