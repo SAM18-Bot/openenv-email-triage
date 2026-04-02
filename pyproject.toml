@@ -12,9 +12,6 @@ authors = [
   { name = "OpenEnv Hackathon Participant" }
 ]
 dependencies = [
-<<<<<<< codex/create-email-triage-rl-environment-vs9mmd
-  "openenv-core[core]>=0.2.0",
-=======
   "openenv>=0.2.0",
 >>>>>>> main
   "fastapi>=0.111,<1.0",
