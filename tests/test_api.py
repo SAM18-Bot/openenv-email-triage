@@ -5,6 +5,12 @@ from src.api import app
 
 def test_api_endpoints():
     client = TestClient(app)
+    root = client.get("/")
+    assert root.status_code == 200
+    root_json = root.json()
+    assert root_json["status"] == "ok"
+    assert "/reset" in root_json["endpoints"]
+
     r1 = client.post('/reset', json={"seed": 2})
     assert r1.status_code == 200
     r2 = client.post('/step', json={"action_type": "read", "confidence": 0.7})

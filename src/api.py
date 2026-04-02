@@ -16,6 +16,20 @@ class ResetRequest(BaseModel):
     seed: Optional[int] = None
 
 
+@app.get("/")
+def root():
+    return {
+        "name": "openenv-email-triage",
+        "status": "ok",
+        "endpoints": ["/reset", "/step", "/state"],
+    }
+
+
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
+
 @app.post("/reset")
 def reset(payload: ResetRequest | None = None):
     seed = payload.seed if payload else None
