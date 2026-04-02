@@ -46,14 +46,27 @@ def choose_action(client: OpenAI, model_name: str, observation: Dict) -> Action:
         return Action(action_type="read", confidence=0.6, reason="heuristic default")
 
 
-def run_task(task_name: str, grader_fn, client: OpenAI, model_name: str) -> float:
+def run_task(task_name: str, grader_fn, client: OpenAI, model_name: str, api_base_url: str) -> float:
     env = EmailTriageOpenEnv(max_steps=50)
     obs = env.reset(seed=42)
     done = False
+
+    print(
+        f"[START] task_id={task_name} model={model_name} base_url={api_base_url} "
+        f"max_steps={env.max_steps} seed=42"
+    )
+
     while not done:
         action = choose_action(client, model_name, obs.model_dump())
-        obs, _, done, _ = env.step(action)
-    return grader_fn(env.trajectory)
+        obs, reward, done, _ = env.step(action)
+        print(
+            f"[STEP] task_id={task_name} step={obs.step} action_type={action.action_type} "
+            f"confidence={action.confidence:.3f} reward={reward.value:.3f} done={str(done).lower()}"
+        )
+
+    score = grader_fn(env.trajectory)
+    print(f"[END] task_id={task_name} steps={env.step_count} score={score:.4f}")
+    return score
 
 
 def _resolve_client_config() -> tuple[str, str, str]:
@@ -93,7 +106,7 @@ def main() -> None:
     ]
 
     for task_id, grader in tasks:
-        score = run_task(task_id, grader, client, model_name)
+        score = run_task(task_id, grader, client, model_name, api_base_url)
         print(f"{task_id}: {score:.4f}")
 
 
