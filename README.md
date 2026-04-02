@@ -1,3 +1,15 @@
+---
+title: Email Triage
+emoji: 📬
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+sdk_version: "1.0.0"
+python_version: "3.11"
+app_file: src/api.py
+pinned: false
+---
+
 # openenv-email-triage
 
 OpenEnv hackathon submission: a realistic reinforcement-learning environment for email inbox triage.
